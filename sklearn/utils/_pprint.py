@@ -187,6 +187,36 @@ class _EstimatorPrettyPrinter(pprint.PrettyPrinter):
                             context, level)
         stream.write(')')
 
+    def _format(self, object, stream, indent, allowance, context, level):
+        objid = id(object)
+        if objid in context:
+            stream.write(_recursion(object))
+            self._recursive = True
+            self._readable = False
+            return
+        rep = self._repr(object, context, level)
+        max_width = self._width - indent - allowance
+        if len(rep) > max_width:
+            p = self._dispatch.get(type(object).__repr__, None)
+            if p is not None:
+                context[objid] = 1
+                p(self, object, stream, indent, allowance, context, level + 1)
+                del context[objid]
+                return
+            elif isinstance(object, dict):
+                context[objid] = 1
+                self._pprint_dict(object, stream, indent, allowance,
+                                  context, level + 1)
+                del context[objid]
+                return
+            else:
+                rep = rep.split('\n')
+                rep = rep[0] + '...'
+                # for i in range(1, len(rep)):
+                #     rep[i] = ' ' * indent + rep[i]
+                # rep = '\n'.join(rep)
+        stream.write(rep)
+
     def _format_dict_items(self, items, stream, indent, allowance, context,
                            level):
         return self._format_params_or_dict_items(
