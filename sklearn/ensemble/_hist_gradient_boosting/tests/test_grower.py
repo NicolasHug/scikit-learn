@@ -9,7 +9,7 @@ from sklearn.ensemble._hist_gradient_boosting.types import Y_DTYPE
 from sklearn.ensemble._hist_gradient_boosting.types import G_H_DTYPE
 
 
-def _make_training_data(n_bins=256, constant_hessian=True):
+def _make_training_data(n_bins=255, constant_hessian=True):
     rng = np.random.RandomState(42)
     n_samples = 10000
 
@@ -70,8 +70,8 @@ def _check_children_consistency(parent, left, right):
         (11, False, "max_leaf_nodes", 0.1),
         (42, True, "max_leaf_nodes", 0.01),
         (42, False, "max_leaf_nodes", 1.),
-        (256, True, "min_gain_to_split", 1.),
-        (256, True, "max_leaf_nodes", 0.1),
+        (255, True, "min_gain_to_split", 1.),
+        (255, True, "max_leaf_nodes", 0.1),
     ]
 )
 def test_grow_tree(n_bins, constant_hessian, stopping_param, shrinkage):
@@ -143,7 +143,7 @@ def test_grow_tree(n_bins, constant_hessian, stopping_param, shrinkage):
 
 def test_predictor_from_grower():
     # Build a tree on the toy 3-leaf dataset to extract the predictor.
-    n_bins = 256
+    n_bins = 255
     X_binned, all_gradients, all_hessians = _make_training_data(
         n_bins=n_bins)
     grower = TreeGrower(X_binned, all_gradients, all_hessians,
@@ -316,7 +316,7 @@ def test_missing_value_predict_only():
 
     rng = np.random.RandomState(0)
     n_samples = 100
-    X_binned = rng.randint(0, 256, size=(n_samples, 1), dtype=np.uint8)
+    X_binned = rng.randint(1, 256, size=(n_samples, 1), dtype=np.uint8)
     X_binned = np.asfortranarray(X_binned)
 
     gradients = rng.normal(size=n_samples).astype(G_H_DTYPE)

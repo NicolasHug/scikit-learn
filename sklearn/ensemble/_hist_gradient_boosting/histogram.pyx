@@ -63,8 +63,8 @@ cdef class HistogramBuilder:
     X_binned : ndarray of int, shape (n_samples, n_features)
         The binned input samples. Must be Fortran-aligned.
     max_bins : int
-        The maximum number of bins. Used to define the shape of the
-        histograms.
+        The maximum number of bins (including missing values). Used to
+        define the shape of the histograms.
     gradients : ndarray, shape (n_samples,)
         The gradients of each training sample. Those are the gradients of the
         loss w.r.t the predictions, evaluated at iteration i - 1.

@@ -164,7 +164,7 @@ class TreeGrower:
     """
     def __init__(self, X_binned, gradients, hessians, max_leaf_nodes=None,
                  max_depth=None, min_samples_leaf=20, min_gain_to_split=0.,
-                 max_bins=256, actual_n_bins=None, has_missing_values=False,
+                 max_bins=255, actual_n_bins=None, has_missing_values=False,
                  l2_regularization=0., min_hessian_to_split=1e-3,
                  shrinkage=1.):
 
@@ -173,7 +173,7 @@ class TreeGrower:
                                   l2_regularization, min_hessian_to_split)
 
         if actual_n_bins is None:
-            actual_n_bins = max_bins
+            actual_n_bins = max_bins + 1  # + 1 for missing values
 
         if isinstance(actual_n_bins, numbers.Integral):
             actual_n_bins = np.array(

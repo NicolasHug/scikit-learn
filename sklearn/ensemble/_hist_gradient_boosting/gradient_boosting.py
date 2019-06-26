@@ -719,7 +719,7 @@ class HistGradientBoostingRegressor(BaseHistGradientBoosting, RegressorMixin):
 
     def __init__(self, loss='least_squares', learning_rate=0.1,
                  max_iter=100, max_leaf_nodes=31, max_depth=None,
-                 min_samples_leaf=20, l2_regularization=0., max_bins=256,
+                 min_samples_leaf=20, l2_regularization=0., max_bins=255,
                  warm_start=False, scoring=None, validation_fraction=0.1,
                  n_iter_no_change=None, tol=1e-7, verbose=0,
                  random_state=None):
@@ -906,7 +906,7 @@ class HistGradientBoostingClassifier(BaseHistGradientBoosting,
 
     def __init__(self, loss='auto', learning_rate=0.1, max_iter=100,
                  max_leaf_nodes=31, max_depth=None, min_samples_leaf=20,
-                 l2_regularization=0., max_bins=256, warm_start=False,
+                 l2_regularization=0., max_bins=255, warm_start=False,
                  scoring=None, validation_fraction=0.1, n_iter_no_change=None,
                  tol=1e-7, verbose=0, random_state=None):
         super(HistGradientBoostingClassifier, self).__init__(

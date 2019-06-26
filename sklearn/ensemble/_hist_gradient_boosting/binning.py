@@ -44,9 +44,9 @@ def _find_binning_thresholds(data, max_bins, subsample, random_state):
         be used to separate the bins. Thus ``len(binning_thresholds) ==
         n_features``. The first threshold (for missing values) is always NaN.
     """
-    if not (2 <= max_bins <= 256):
+    if not (2 <= max_bins <= 255):
         raise ValueError('max_bins={} should be no smaller than 2 '
-                         'and no larger than 256.'.format(max_bins))
+                         'and no larger than 255.'.format(max_bins))
     rng = check_random_state(random_state)
     if subsample is not None and data.shape[0] > subsample:
         subset = rng.choice(np.arange(data.shape[0]), subsample, replace=False)
@@ -61,19 +61,21 @@ def _find_binning_thresholds(data, max_bins, subsample, random_state):
             col_data = col_data[~missing_mask]
         col_data = np.ascontiguousarray(col_data, dtype=X_DTYPE)
         distinct_values = np.unique(col_data)
-        if len(distinct_values) <= max_bins - 1:  # - 1 for missing values bin
+        if len(distinct_values) <= max_bins:
             midpoints = distinct_values[:-1] + distinct_values[1:]
             midpoints *= .5
+            assert midpoints.shape[0] <= max_bins - 1
         else:
             # We sort again the data in this case. We could compute
             # approximate midpoint percentiles using the output of
             # np.unique(col_data, return_counts) instead but this is more
             # work and the performance benefit will be limited because we
             # work on a fixed-size subsample of the full data.
-            percentiles = np.linspace(0, 100, num=max_bins)
+            percentiles = np.linspace(0, 100, num=max_bins + 1)
             percentiles = percentiles[1:-1]
             midpoints = np.percentile(col_data, percentiles,
                                       interpolation='midpoint').astype(X_DTYPE)
+            assert midpoints.shape[0] == max_bins - 1
 
         # We prepend a fake threshold (nan) for the first bin (reserved for
         # missing values). This threshold is never used in practice, but we
@@ -117,7 +119,7 @@ class _BinMapper(BaseEstimator, TransformerMixin):
         Pseudo-random number generator to control the random sub-sampling.
         See :term:`random_state`.
     """
-    def __init__(self, max_bins=256, subsample=int(2e5), random_state=None):
+    def __init__(self, max_bins=255, subsample=int(2e5), random_state=None):
         self.max_bins = max_bins
         self.subsample = subsample
         self.random_state = random_state

@@ -5,7 +5,7 @@ import numpy as np
 # and hessians arrays are stored as floats to avoid using too much memory.
 Y_DTYPE = np.float64
 X_DTYPE = np.float64
-X_BINNED_DTYPE = np.uint8  # hence max_bins == 256
+X_BINNED_DTYPE = np.uint8  # hence max_bins == 255 + 1 for missing values
 # dtypes for gradients and hessians arrays
 G_H_DTYPE = np.float32
 
