@@ -265,7 +265,7 @@ class LeastAbsoluteDeviation(BaseLoss):
                                                   - raw_predictions[indices],
                                                   sample_weight=sample_weight,
                                                   percentile=50)
-            leaf.value = grower.shrinkage * median_res
+            leaf.value = median_res
             # Note that the regularization is ignored here
 
 

@@ -285,7 +285,7 @@ class TreeGrower:
         while self.splittable_nodes:
             self.split_next()
 
-        self._apply_shrinkage()
+        # self._apply_shrinkage()
 
     def _apply_shrinkage(self):
         """Multiply leaves values by shrinkage parameter.
@@ -517,12 +517,13 @@ class TreeGrower:
         """
         predictor_nodes = np.zeros(self.n_nodes, dtype=PREDICTOR_RECORD_DTYPE)
         _fill_predictor_node_array(predictor_nodes, self.root,
-                                   bin_thresholds, self.n_bins_non_missing)
+                                   bin_thresholds, self.n_bins_non_missing, self.shrinkage)
         return TreePredictor(predictor_nodes)
 
 
 def _fill_predictor_node_array(predictor_nodes, grower_node,
                                bin_thresholds, n_bins_non_missing,
+                               shrinkage,
                                next_free_idx=0):
     """Helper used in make_predictor to set the TreePredictor fields."""
     node = predictor_nodes[next_free_idx]
@@ -537,6 +538,7 @@ def _fill_predictor_node_array(predictor_nodes, grower_node,
 
     if grower_node.is_leaf:
         # Leaf node
+        node['value'] *= shrinkage
         node['is_leaf'] = True
         return next_free_idx + 1
     else:
@@ -561,6 +563,7 @@ def _fill_predictor_node_array(predictor_nodes, grower_node,
             predictor_nodes, grower_node.left_child,
             bin_thresholds=bin_thresholds,
             n_bins_non_missing=n_bins_non_missing,
+            shrinkage=shrinkage,
             next_free_idx=next_free_idx)
 
         node['right'] = next_free_idx
@@ -568,4 +571,5 @@ def _fill_predictor_node_array(predictor_nodes, grower_node,
             predictor_nodes, grower_node.right_child,
             bin_thresholds=bin_thresholds,
             n_bins_non_missing=n_bins_non_missing,
+            shrinkage=shrinkage,
             next_free_idx=next_free_idx)

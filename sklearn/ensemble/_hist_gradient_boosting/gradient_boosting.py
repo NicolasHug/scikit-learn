@@ -390,7 +390,8 @@ class BaseHistGradientBoosting(BaseEstimator, ABC):
                 # Update raw_predictions with the predictions of the newly
                 # created tree.
                 tic_pred = time()
-                _update_raw_predictions(raw_predictions[k, :], grower)
+                _update_raw_predictions(raw_predictions[k, :], grower,
+                                        self.learning_rate)
                 toc_pred = time()
                 acc_prediction_time += toc_pred - tic_pred
 

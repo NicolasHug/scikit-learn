@@ -168,13 +168,15 @@ def test_nodes_values(monotonic_cst, seed):
                         monotonic_cst=[monotonic_cst],
                         shrinkage=.1)
     grower.grow()
+    predictor = grower.make_predictor()
 
-    # grow() will shrink the leaves values at the very end. For our comparison
+    # Shrinkage was applied to the predictor leaves. For our comparison
     # tests, we need to revert the shrinkage of the leaves, else we would
     # compare the value of a leaf (shrunk) with a node (not shrunk) and the
     # test would not be correct.
-    for leave in grower.finalized_leaves:
-        leave.value /= grower.shrinkage
+    for node in predictor.nodes:
+        if node['is_leaf']:
+            node['value'] /= grower.shrinkage
 
     # The consistency of the bounds can only be checked on the tree grower
     # as the node bounds are not copied into the predictor tree. The
@@ -182,7 +184,6 @@ def test_nodes_values(monotonic_cst, seed):
     # done either on the grower tree or on the predictor tree. We only
     # do those checks on the predictor tree as the latter is derived from
     # the former.
-    predictor = grower.make_predictor()
     assert_children_values_monotonic(predictor, monotonic_cst)
     assert_children_values_bounded(grower, monotonic_cst)
     assert_leaves_values_monotonic(predictor, monotonic_cst)

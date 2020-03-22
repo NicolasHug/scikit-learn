@@ -16,7 +16,8 @@ from .common cimport Y_DTYPE_C
 
 def _update_raw_predictions(
         Y_DTYPE_C [::1] raw_predictions,  # OUT
-        grower):
+        grower,
+        Y_DTYPE_C shrinkage):
     """Update raw_predictions with the predictions of the newest tree.
 
     This is equivalent to (and much faster than):
@@ -37,10 +38,10 @@ def _update_raw_predictions(
                       dtype=np.uint32)
     stops = np.array([leaf.partition_stop for leaf in leaves],
                      dtype=np.uint32)
-    values = np.array([leaf.value for leaf in leaves], dtype=Y_DTYPE)
+    values = np.array([leaf.value * shrinkage for leaf in leaves], dtype=Y_DTYPE)
 
     _update_raw_predictions_helper(raw_predictions, starts, stops, partition,
-                                   values)
+                                   values, shrinkage)
 
 
 cdef inline void _update_raw_predictions_helper(
@@ -48,7 +49,8 @@ cdef inline void _update_raw_predictions_helper(
         const unsigned int [::1] starts,
         const unsigned int [::1] stops,
         const unsigned int [::1] partition,
-        const Y_DTYPE_C [::1] values):
+        const Y_DTYPE_C [::1] values,
+        const Y_DTYPE_C shrinkage):
 
     cdef:
         unsigned int position
