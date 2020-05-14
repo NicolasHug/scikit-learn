@@ -30,12 +30,12 @@ def _predict_from_numeric_data(
         int i
 
     for i in prange(numeric_data.shape[0], schedule='static', nogil=True):
-        out[i] = _predict_one_from_numeric_data(nodes, numeric_data, i)
+        out[i] = _predict_one_from_numeric_data(nodes, numeric_data[i], i)
 
 
 cdef inline Y_DTYPE_C _predict_one_from_numeric_data(
         node_struct [:] nodes,
-        const X_DTYPE_C [:, :] numeric_data,
+        const X_DTYPE_C [:] numeric_data,
         const int row) nogil:
     # Need to pass the whole array and the row index, else prange won't work.
     # See issue Cython #2798
@@ -47,13 +47,13 @@ cdef inline Y_DTYPE_C _predict_one_from_numeric_data(
         if node.is_leaf:
             return node.value
 
-        if isnan(numeric_data[row, node.feature_idx]):
+        if isnan(numeric_data[node.feature_idx]):
             if node.missing_go_to_left:
                 node = nodes[node.left]
             else:
                 node = nodes[node.right]
         else:
-            if numeric_data[row, node.feature_idx] <= node.threshold:
+            if numeric_data[node.feature_idx] <= node.threshold:
                 node = nodes[node.left]
             else:
                 node = nodes[node.right]
@@ -69,13 +69,13 @@ def _predict_from_binned_data(
         int i
 
     for i in prange(binned_data.shape[0], schedule='static', nogil=True):
-        out[i] = _predict_one_from_binned_data(nodes, binned_data, i,
+        out[i] = _predict_one_from_binned_data(nodes, binned_data[i], i,
                                                missing_values_bin_idx)
 
 
 cdef inline Y_DTYPE_C _predict_one_from_binned_data(
         node_struct [:] nodes,
-        const X_BINNED_DTYPE_C [:, :] binned_data,
+        const X_BINNED_DTYPE_C [:] binned_data,
         const int row,
         const unsigned char missing_values_bin_idx) nogil:
     # Need to pass the whole array and the row index, else prange won't work.
@@ -87,13 +87,13 @@ cdef inline Y_DTYPE_C _predict_one_from_binned_data(
     while True:
         if node.is_leaf:
             return node.value
-        if binned_data[row, node.feature_idx] ==  missing_values_bin_idx:
+        if binned_data[ node.feature_idx] ==  missing_values_bin_idx:
             if node.missing_go_to_left:
                 node = nodes[node.left]
             else:
                 node = nodes[node.right]
         else:
-            if binned_data[row, node.feature_idx] <= node.bin_threshold:
+            if binned_data[ node.feature_idx] <= node.bin_threshold:
                 node = nodes[node.left]
             else:
                 node = nodes[node.right]

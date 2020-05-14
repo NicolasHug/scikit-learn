@@ -437,7 +437,7 @@ cdef class Splitter:
 
                 self._find_best_bin_to_split_left_to_right(
                     feature_idx, has_missing_values[feature_idx],
-                    histograms, n_samples, sum_gradients, sum_hessians,
+                    histograms[feature_idx], n_samples, sum_gradients, sum_hessians,
                     value, monotonic_cst[feature_idx],
                     lower_bound, upper_bound, &split_infos[feature_idx])
 
@@ -446,7 +446,7 @@ cdef class Splitter:
                     # sending the nans to the left child would lead to a higher
                     # gain
                     self._find_best_bin_to_split_right_to_left(
-                        feature_idx, histograms, n_samples,
+                        feature_idx, histograms[feature_idx], n_samples,
                         sum_gradients, sum_hessians,
                         value, monotonic_cst[feature_idx],
                         lower_bound, upper_bound, &split_infos[feature_idx])
@@ -491,7 +491,7 @@ cdef class Splitter:
             Splitter self,
             unsigned int feature_idx,
             unsigned char has_missing_values,
-            const hist_struct [:, ::1] histograms,  # IN
+            const hist_struct [::1] histograms,  # IN
             unsigned int n_samples,
             Y_DTYPE_C sum_gradients,
             Y_DTYPE_C sum_hessians,
@@ -540,17 +540,17 @@ cdef class Splitter:
         loss_current_node = _loss_from_value(value, sum_gradients)
 
         for bin_idx in range(end):
-            n_samples_left += histograms[feature_idx, bin_idx].count
+            n_samples_left += histograms[bin_idx].count
             n_samples_right = n_samples_ - n_samples_left
 
             if self.hessians_are_constant:
-                sum_hessian_left += histograms[feature_idx, bin_idx].count
+                sum_hessian_left += histograms[bin_idx].count
             else:
                 sum_hessian_left += \
-                    histograms[feature_idx, bin_idx].sum_hessians
+                    histograms[bin_idx].sum_hessians
             sum_hessian_right = sum_hessians - sum_hessian_left
 
-            sum_gradient_left += histograms[feature_idx, bin_idx].sum_gradients
+            sum_gradient_left += histograms[bin_idx].sum_gradients
             sum_gradient_right = sum_gradients - sum_gradient_left
 
             if n_samples_left < self.min_samples_leaf:
@@ -605,7 +605,7 @@ cdef class Splitter:
     cdef void _find_best_bin_to_split_right_to_left(
             self,
             unsigned int feature_idx,
-            const hist_struct [:, ::1] histograms,  # IN
+            const hist_struct [::1] histograms,  # IN
             unsigned int n_samples,
             Y_DTYPE_C sum_gradients,
             Y_DTYPE_C sum_hessians,
@@ -653,18 +653,18 @@ cdef class Splitter:
         loss_current_node = _loss_from_value(value, sum_gradients)
 
         for bin_idx in range(start, -1, -1):
-            n_samples_right += histograms[feature_idx, bin_idx + 1].count
+            n_samples_right += histograms[bin_idx + 1].count
             n_samples_left = n_samples_ - n_samples_right
 
             if self.hessians_are_constant:
-                sum_hessian_right += histograms[feature_idx, bin_idx + 1].count
+                sum_hessian_right += histograms[bin_idx + 1].count
             else:
                 sum_hessian_right += \
-                    histograms[feature_idx, bin_idx + 1].sum_hessians
+                    histograms[bin_idx + 1].sum_hessians
             sum_hessian_left = sum_hessians - sum_hessian_right
 
             sum_gradient_right += \
-                histograms[feature_idx, bin_idx + 1].sum_gradients
+                histograms[bin_idx + 1].sum_gradients
             sum_gradient_left = sum_gradients - sum_gradient_right
 
             if n_samples_right < self.min_samples_leaf:
