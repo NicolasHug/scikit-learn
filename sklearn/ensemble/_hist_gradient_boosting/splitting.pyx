@@ -1,7 +1,6 @@
 # cython: cdivision=True
 # cython: boundscheck=False
 # cython: wraparound=False
-# cython: profile=True
 # cython: language_level=3
 """This module contains routines and data structures to:
 
