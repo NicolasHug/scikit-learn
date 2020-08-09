@@ -1,5 +1,6 @@
 import unittest
 import sys
+import pytest
 
 import numpy as np
 import scipy.sparse as sp
@@ -23,6 +24,7 @@ from sklearn.utils.estimator_checks import check_fit_score_takes_y
 from sklearn.utils.estimator_checks import check_no_attributes_set_in_init
 from sklearn.utils.estimator_checks import check_classifier_data_not_an_array
 from sklearn.utils.estimator_checks import check_regressor_data_not_an_array
+from sklearn.utils.estimator_checks import check_dataframe_column_names_consistency
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.estimator_checks import check_outlier_corruption
 from sklearn.utils.fixes import _parse_version
@@ -606,6 +608,39 @@ def test_all_estimators_all_public():
     for est in estimators:
         assert not est.__class__.__name__.startswith("_")
 
+class DummyClassifier(BaseEstimator, ClassifierMixin):
+    """
+    Dummy classifer for testing check_dataframe_column_names_consistency.
+    Parameter 'warm_start' is missing.
+    Function is_regressor() returns False.
+    Attribute '_feature_names_in' is missing.
+    """
+
+    def __init__(self):
+        self.random_random_state = 42
+
+    def fit(self, X, y):
+        pass
+
+@pytest.mark.parametrize("name, estimator_orig", [("dummy", DummyClassifier()), ('hgbdt', None)])
+def test_check_dataframe_column_names_consistency(name, estimator_orig):
+    """
+    Dummy tests for all conditions == False and the experimental HistGradientBoostingRegressor tests for
+    all conditions == True. The HistGradientBoostingRegressor is an experimental feature and could be
+    depracted without warning. Therefore it needs to be handled with care.
+
+    TODO: Dummy Regressor for all conditions == True
+    """
+    if name == 'hgbdt':
+        try:
+            from sklearn.experimental import enable_hist_gradient_boosting
+            from sklearn.ensemble import HistGradientBoostingRegressor
+            estimator_orig = HistGradientBoostingRegressor()
+        except ImportError:
+            raise SkipTest(
+                "HistGradientBoostingRegressor is an experimental feature and not enabled in this version."
+            )
+    check_dataframe_column_names_consistency(name, estimator_orig)
 
 if __name__ == '__main__':
     # This module is run as a script to check that we have no dependency on
